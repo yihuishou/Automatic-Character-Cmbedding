@@ -16,6 +16,7 @@ export const TEMPLATE_LAYER = {
     TEXT:  "text",
     IMAGE: "bg",
     DIALOG_OVERLAY: "dialog-overlay",
+    OVERLAY_MANUAL: "overlay-manual",
 };
 
 export const image_suffix_list = [".psd", ".png", ".jpg", ".jpeg", ".tif", ".tiff"];

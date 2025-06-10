@@ -30,6 +30,7 @@ interface ImageWorkspace {
     bgLayer: ArtLayer;
     textTemplateLayer: ArtLayer;
     dialogOverlayLayer: ArtLayer;
+    overlayManualLayer: ArtLayer;
 
     pendingDelLayerList: ArtLayer[];
     groups: GroupDict;
@@ -149,9 +150,15 @@ function importImage(img: ImageInfo): boolean
     }
 
     // adjust layer order
-    if (img.ws.bgLayer && (opts.dialogOverlayLabelGroups !== "")) {
-        log('move "dialog-overlay" before "bg"');
-        img.ws.dialogOverlayLayer.move(img.ws.bgLayer, ElementPlacement.PLACEBEFORE);
+    if (img.ws.bgLayer) {
+        // move overlay-manual before bg
+        log('move "overlay-manual" before "bg"');
+        img.ws.overlayManualLayer.move(img.ws.bgLayer, ElementPlacement.PLACEBEFORE);
+        
+        if (opts.dialogOverlayLabelGroups !== "") {
+            log('move "dialog-overlay" before "overlay-manual"');
+            img.ws.dialogOverlayLayer.move(img.ws.overlayManualLayer, ElementPlacement.PLACEBEFORE);
+        }
     }
 
     // remove unnecessary Layer/LayerSet
@@ -174,6 +181,34 @@ function importImage(img: ImageInfo): boolean
         log("run action _end[" + opts.actionGroup + "]..." + result ? "done" : "fail");
     }
     return true;
+}
+
+// 在涂白文件夾中尋找匹配的圖片文件（支援不同後綴名）
+function findOverlayManualFile(overlayManualSource: string, originalFilename: string): File | null
+{
+    // 先嘗試精確匹配（包含後綴）
+    let exactMatchFile = new File(overlayManualSource + dirSeparator + originalFilename);
+    if (exactMatchFile.exists) {
+        return exactMatchFile;
+    }
+    
+    // 如果精確匹配失敗，嘗試匹配不同後綴的文件
+    let nameWithoutExt = originalFilename.substring(0, originalFilename.lastIndexOf("."));
+    if (nameWithoutExt === "") {
+        nameWithoutExt = originalFilename; // 如果沒有後綴，使用原始文件名
+    }
+    
+    // 遍歷支援的圖片格式
+    for (let i = 0; i < image_suffix_list.length; i++) {
+        let suffix = image_suffix_list[i];
+        let candidateFile = new File(overlayManualSource + dirSeparator + nameWithoutExt + suffix);
+        if (candidateFile.exists) {
+            log("found overlay-manual file with different extension: " + candidateFile.fsName + " (original: " + originalFilename + ")");
+            return candidateFile;
+        }
+    }
+    
+    return null; // 找不到匹配的文件
 }
 
 function openImageWorkspace(img_filename: string, template_path: string): ImageWorkspace | null
@@ -205,6 +240,7 @@ function openImageWorkspace(img_filename: string, template_path: string): ImageW
     let bgLayer: ArtLayer;
     let textTemplateLayer: ArtLayer;
     let dialogOverlayLayer: ArtLayer;
+    let overlayManualLayer: ArtLayer;
     let pendingDelLayerList: ArtLayer[] = new Array();
     {
         // add all artlayers to the pending delete list
@@ -217,7 +253,7 @@ function openImageWorkspace(img_filename: string, template_path: string): ImageW
         try { bgLayer = wsDoc.artLayers.getByName(TEMPLATE_LAYER.IMAGE); }
         catch {
             bgLayer = wsDoc.artLayers.add();
-            bgLayer.name = TEMPLATE_LAYER.DIALOG_OVERLAY;
+            bgLayer.name = TEMPLATE_LAYER.IMAGE;
         }
         // text layer template
         try { textTemplateLayer = wsDoc.artLayers.getByName(TEMPLATE_LAYER.TEXT); }
@@ -232,6 +268,12 @@ function openImageWorkspace(img_filename: string, template_path: string): ImageW
             dialogOverlayLayer = wsDoc.artLayers.add();
             dialogOverlayLayer.name = TEMPLATE_LAYER.DIALOG_OVERLAY;
         }
+        // overlay manual layer template
+        try { overlayManualLayer = wsDoc.artLayers.getByName(TEMPLATE_LAYER.OVERLAY_MANUAL); }
+        catch {
+            overlayManualLayer = wsDoc.artLayers.add();
+            overlayManualLayer.name = TEMPLATE_LAYER.OVERLAY_MANUAL;
+        }
     }
 
     // import bgDoc to wsDoc:
@@ -245,11 +287,98 @@ function openImageWorkspace(img_filename: string, template_path: string): ImageW
         wsDoc.activeLayer = bgLayer;
         wsDoc.paste();
         delArrayElement<ArtLayer>(pendingDelLayerList, bgLayer); // keep bg layer
+        
+        // import overlay-manual layer from manual source folder or copy from bg layer
+        if (opts.overlayManualSource !== "") {
+            // try to load image from overlay manual source folder
+            try {
+                let overlayManualFile = findOverlayManualFile(opts.overlayManualSource, img_filename);
+                if (overlayManualFile !== null) {
+                    let overlayManualDoc = app.open(overlayManualFile);
+                    app.activeDocument = overlayManualDoc;
+                    overlayManualDoc.selection.selectAll();
+                    overlayManualDoc.selection.copy();
+                    overlayManualDoc.close(SaveOptions.DONOTSAVECHANGES);
+                    
+                    app.activeDocument = wsDoc;
+                    wsDoc.activeLayer = overlayManualLayer;
+                    wsDoc.paste();
+                    log("loaded overlay-manual from: " + overlayManualFile.fsName);
+                } else {
+                    // fallback: copy bg layer content to overlay-manual layer
+                    log("overlay-manual file not found, fallback to copy bg layer (searched for: " + img_filename + ")");
+                    wsDoc.activeLayer = bgLayer;
+                    wsDoc.selection.selectAll();
+                    wsDoc.selection.copy();
+                    wsDoc.activeLayer = overlayManualLayer;
+                    wsDoc.paste();
+                }
+            } catch (e) {
+                log_err("failed to load overlay-manual image: " + e.toString() + ", fallback to copy bg layer");
+                // fallback: copy bg layer content to overlay-manual layer
+                wsDoc.activeLayer = bgLayer;
+                wsDoc.selection.selectAll();
+                wsDoc.selection.copy();
+                wsDoc.activeLayer = overlayManualLayer;
+                wsDoc.paste();
+            }
+        } else {
+            // copy bg layer content to overlay-manual layer
+            wsDoc.activeLayer = bgLayer;
+            wsDoc.selection.selectAll();
+            wsDoc.selection.copy();
+            wsDoc.activeLayer = overlayManualLayer;
+            wsDoc.paste();
+        }
     } else {
         app.activeDocument = bgDoc;
         let item = bgLayer;
         for (let i = 0; i < bgDoc.layers.length; i++) {
             item = bgDoc.layers[i].duplicate(item, ElementPlacement.PLACEAFTER);
+        }
+        
+        // import overlay-manual layer from manual source folder or copy from bg layer
+        app.activeDocument = wsDoc;
+        if (opts.overlayManualSource !== "") {
+            // try to load image from overlay manual source folder
+            try {
+                let overlayManualFile = findOverlayManualFile(opts.overlayManualSource, img_filename);
+                if (overlayManualFile !== null) {
+                    let overlayManualDoc = app.open(overlayManualFile);
+                    app.activeDocument = overlayManualDoc;
+                    overlayManualDoc.selection.selectAll();
+                    overlayManualDoc.selection.copy();
+                    overlayManualDoc.close(SaveOptions.DONOTSAVECHANGES);
+                    
+                    app.activeDocument = wsDoc;
+                    wsDoc.activeLayer = overlayManualLayer;
+                    wsDoc.paste();
+                    log("loaded overlay-manual from: " + overlayManualFile.fsName);
+                } else {
+                    // fallback: copy bg layer content to overlay-manual layer
+                    log("overlay-manual file not found, fallback to copy bg layer (searched for: " + img_filename + ")");
+                    wsDoc.activeLayer = bgLayer;
+                    wsDoc.selection.selectAll();
+                    wsDoc.selection.copy();
+                    wsDoc.activeLayer = overlayManualLayer;
+                    wsDoc.paste();
+                }
+            } catch (e) {
+                log_err("failed to load overlay-manual image: " + e.toString() + ", fallback to copy bg layer");
+                // fallback: copy bg layer content to overlay-manual layer
+                wsDoc.activeLayer = bgLayer;
+                wsDoc.selection.selectAll();
+                wsDoc.selection.copy();
+                wsDoc.activeLayer = overlayManualLayer;
+                wsDoc.paste();
+            }
+        } else {
+            // copy bg layer content to overlay-manual layer  
+            wsDoc.activeLayer = bgLayer;
+            wsDoc.selection.selectAll();
+            wsDoc.selection.copy();
+            wsDoc.activeLayer = overlayManualLayer;
+            wsDoc.paste();
         }
     }
     bgDoc.close(SaveOptions.DONOTSAVECHANGES);
@@ -294,6 +423,7 @@ function openImageWorkspace(img_filename: string, template_path: string): ImageW
         bgLayer: bgLayer,
         textTemplateLayer: textTemplateLayer,
         dialogOverlayLayer: dialogOverlayLayer,
+        overlayManualLayer: overlayManualLayer,
         pendingDelLayerList: pendingDelLayerList,
         groups: groups,
     };

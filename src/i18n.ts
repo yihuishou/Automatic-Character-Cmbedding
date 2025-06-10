@@ -19,6 +19,7 @@ namespace I18n {
 
     export var LABEL_TEXT_FILE: string = "LabelPlus文本:";
     export var LABEL_SOURCE: string = "图源文件夹:";
+    export var LABEL_OVERLAY_MANUAL_SOURCE: string = "涂白文件夹:";
     export var LABEL_TARGET: string = "输出文件夹:";
     export var LABEL_SETTING: string = "存取配置";
     export var LABEL_SELECT_IMG: string = "导入图片选择";
@@ -53,6 +54,7 @@ namespace I18n {
     export var ERROR_FILE_OPEN_FAIL: string = "文件打开失败，请检查PS是否能正确打开该文件！";
     export var ERROR_FILE_SAVE_FAIL: string = "文件保存失败，请检查是否有磁盘操作权限、磁盘空间是否充足。";
     export var ERROR_NOT_FOUND_SOURCE: string = "未找到图源文件夹";
+    export var ERROR_NOT_FOUND_OVERLAY_MANUAL_SOURCE: string = "未找到涂白文件夹";
     export var ERROR_NOT_FOUND_TARGET: string = "未找到目标文件夹";
     export var ERROR_NOT_FOUND_LPTEXT: string = "未找到LabelPlus文本文件";
     export var ERROR_NOT_FOUND_TEMPLATE: string = "未找到Photoshop模板文件";
@@ -84,6 +86,7 @@ namespace I18n {
         RB_TEMPLATE_CUSTOM = "Custom Template";
         LABEL_TEXT_FILE = "LabelPlus Text:";
         LABEL_SOURCE = "Image Source:";
+        LABEL_OVERLAY_MANUAL_SOURCE = "Overlay Manual Source:";
         LABEL_TARGET = "Output Folder:";
         LABEL_SETTING = "Setting";
         LABEL_SELECT_IMG = "Select Image";
@@ -113,6 +116,7 @@ namespace I18n {
         ERROR_FILE_OPEN_FAIL = "open file failed, please confirm whether Photoshop can open the file.";
         ERROR_FILE_SAVE_FAIL = "File saving failed, please check whether you have disk operation permission and whether the disk space is sufficient.";
         ERROR_NOT_FOUND_SOURCE = "Image Source Folder Not Found!";
+        ERROR_NOT_FOUND_OVERLAY_MANUAL_SOURCE = "Overlay Manual Source Folder Not Found!";
         ERROR_NOT_FOUND_TARGET = "Output PSD Folder Not Found!";
         ERROR_NOT_FOUND_LPTEXT = "LabelPlus Text File Not Found!";
         ERROR_NOT_FOUND_TEMPLATE = "Photoshop template file not found!";

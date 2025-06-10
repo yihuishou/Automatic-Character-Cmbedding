@@ -17,6 +17,7 @@ export class CustomOptions {
     // ------------------------------------ not saved options
     source: string = ""; // images source folder
     target: string = ""; // images target folder
+    overlayManualSource: string = ""; // overlay manual images source folder
     lpTextFilePath: string = ""; // path of labelplus text file
     imageSelected: ImageInfo[] = []; // selected images
     groupSelected: string[] = [];  // selected label group
