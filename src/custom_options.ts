@@ -3,14 +3,14 @@
 namespace LabelPlus {
 
 export enum OptionTextDirection { Keep, Horizontal, Vertical };
-export enum OptionDocTemplate { Auto, No, Custom }; // auto choose preset template/no use template/custom template
+export enum OptionDocTemplate { Auto_RGB, No, Custom, Auto_NO_RGB}; // auto choose preset template/no use template/custom template
 export enum OptionOutputType { PSD, TIFF, PNG, JPG, _count };
 
 export class ImageInfo {
     file: string = "";
     matched_file:string = "";
     index: number = 0;
-};
+}
 
 export class CustomOptions {
 
@@ -22,7 +22,7 @@ export class CustomOptions {
     groupSelected: string[] = [];  // selected label group
 
     // ------------------------------------ saved options
-    docTemplate: OptionDocTemplate = OptionDocTemplate.Auto; // image document template option
+    docTemplate: OptionDocTemplate = OptionDocTemplate.Auto_RGB; // image document template option
     docTemplateCustomPath: string = "";  // custom image document template path
 
     outputType: OptionOutputType = OptionOutputType.PSD; // output image file type
@@ -40,6 +40,6 @@ export class CustomOptions {
     actionGroup: string = ""; // action group name
     dialogOverlayLabelGroups: string = ""; // the label groups need dialog overlay layer, split by ","
     dialogOverlayTolerance: number = 16; // dialog overlay tolerance
-};
+}
 
 } // namespace LabelPlus

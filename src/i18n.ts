@@ -13,8 +13,9 @@ namespace I18n {
     export var PANEL_AUTOMATION: string = "自动化";
 
     export var PANEL_TEMPLATE_SETTING: string = "文档模板设置";
-    export var RB_TEMPLATE_AUTO: string = "自动";
-    export var RB_TEMPLATE_NO: string = "不使用模板（直接新建文件）";
+    export var RB_TEMPLATE_AUTO: string = "自动(彩色)";
+    export var RB_TEMPLATE_AUTO_NO_COLOR  = "自动(黑白)";
+    export var RB_TEMPLATE_NO: string = "不使用模板(直出)";
     export var RB_TEMPLATE_CUSTOM: string = "自定义模板";
 
     export var LABEL_TEXT_FILE: string = "LabelPlus文本:";
@@ -79,7 +80,8 @@ namespace I18n {
         PANEL_STYLE = "Style";
         PANEL_AUTOMATION = "Automation";
         PANEL_TEMPLATE_SETTING = "Document Template Setting";
-        RB_TEMPLATE_AUTO = "Auto";
+        RB_TEMPLATE_AUTO = "Auto(Color)";
+        RB_TEMPLATE_AUTO_NO_COLOR = "Auto(No Color)";
         RB_TEMPLATE_NO = "No Template";
         RB_TEMPLATE_CUSTOM = "Custom Template";
         LABEL_TEXT_FILE = "LabelPlus Text:";

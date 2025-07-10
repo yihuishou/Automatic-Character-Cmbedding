@@ -502,9 +502,10 @@ class LabelPlusInput extends GenericUI {
         let xxxOfs: number = 5;
         let xxx: number = xxxOfs;
         let yyy: number = 5;
-        pnll.autoTemplateRb = pnll.add('radiobutton',  [xxx, yyy, xxx + 200, yyy + 20], I18n.RB_TEMPLATE_AUTO); xxx += 200;
+        pnll.autoTemplateRb = pnll.add('radiobutton',  [xxx, yyy, xxx + 100, yyy + 20], I18n.RB_TEMPLATE_AUTO); xxx += 100;
         pnll.autoTemplateRb.value = true;
-        pnll.noTemplateRb = pnll.add('radiobutton',  [xxx, yyy, xxx + 200, yyy + 20], I18n.RB_TEMPLATE_NO); xxx += 200;
+        pnll.autoTemplateRbs = pnll.add('radiobutton',  [xxx, yyy, xxx + 100, yyy + 20], I18n.RB_TEMPLATE_AUTO_NO_COLOR); xxx += 100;
+        pnll.noTemplateRb = pnll.add('radiobutton',  [xxx, yyy, xxx + 100, yyy + 20], I18n.RB_TEMPLATE_NO); xxx += 100;
         xxx = xxxOfs;
         yyy += 23;
         pnll.customTemplateRb = pnll.add('radiobutton', [xxx, yyy, xxx + 130, yyy + 20], I18n.RB_TEMPLATE_CUSTOM); xxx += 135;
@@ -516,6 +517,7 @@ class LabelPlusInput extends GenericUI {
             pnll.customTemplateTextButton.enabled = custom_enable;
         };
         pnll.autoTemplateRb.onClick = rbclick;
+        pnll.autoTemplateRbs.onClick = rbclick;
         pnll.noTemplateRb.onClick = rbclick;
         pnll.customTemplateRb.onClick = rbclick;
         rbclick();
@@ -586,6 +588,7 @@ class LabelPlusInput extends GenericUI {
         let opts = this.opts;
         if (opts.docTemplate !== undefined) {
             pnl.docTemplatePnl.autoTemplateRb.value = false;
+            pnl.docTemplatePnl.autoTemplateRbs.value = false;
             pnl.docTemplatePnl.noTemplateRb.value = false;
             pnl.docTemplatePnl.customTemplateRb.value = false;
             switch (opts.docTemplate) {
@@ -596,7 +599,12 @@ class LabelPlusInput extends GenericUI {
                 pnl.docTemplatePnl.customTemplateRb.value = true;
                 pnl.docTemplatePnl.customTemplateTextbox.text = opts.docTemplateCustomPath;
                 break;
-            case OptionDocTemplate.Auto:
+            case OptionDocTemplate.Auto_RGB:
+                pnl.docTemplatePnl.autoTemplateRb.value = true;
+                break;
+            case OptionDocTemplate.Auto_NO_RGB:
+                pnl.docTemplatePnl.autoTemplateRbs.value = true;
+                break;
             default:
                 pnl.docTemplatePnl.autoTemplateRb.value = true;
                 break;
@@ -631,12 +639,25 @@ class LabelPlusInput extends GenericUI {
         }
 
         let getOption = (opts: CustomOptions): CustomOptions  | null => {
-            opts.docTemplate =
-                pnl.docTemplatePnl.autoTemplateRb.value ? OptionDocTemplate.Auto : (
-                    pnl.docTemplatePnl.noTemplateRb.value ? OptionDocTemplate.No : (
-                        pnl.docTemplatePnl.customTemplateRb.value ? OptionDocTemplate.Custom : OptionDocTemplate.Auto
-                    )
-                );
+            if (pnl.docTemplatePnl.autoTemplateRb.value) {
+                opts.docTemplate = OptionDocTemplate.Auto_RGB;
+            } else if (pnl.docTemplatePnl.autoTemplateRbs.value) {
+                opts.docTemplate = OptionDocTemplate.Auto_NO_RGB;
+            }
+            else {
+                if (pnl.docTemplatePnl.noTemplateRb.value) {
+                    opts.docTemplate = OptionDocTemplate.No;
+
+                } else {
+                    if (pnl.docTemplatePnl.customTemplateRb.value) {
+                        opts.docTemplate = OptionDocTemplate.Custom;
+
+                    } else {
+                        opts.docTemplate = OptionDocTemplate.Auto_RGB;
+
+                    }
+                }
+            }
             opts.docTemplateCustomPath = pnl.docTemplatePnl.customTemplateTextbox.text;
             if (pnl.setFontCheckBox.value) {
                 let font = pnl.font.getFont()

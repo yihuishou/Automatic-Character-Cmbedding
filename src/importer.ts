@@ -377,7 +377,7 @@ export function importFiles(custom_opts: CustomOptions): boolean
             return false;
         }
         break;
-    case OptionDocTemplate.Auto:
+    case OptionDocTemplate.Auto_RGB:
         let tempdir = GetScriptFolder() + dirSeparator + "ps_script_res" + dirSeparator;
         let tempname = app.locale.split("_")[0].toLocaleLowerCase() + ".psd"; // such as "zh_CN" -> zh.psd
 
@@ -397,6 +397,27 @@ export function importFiles(custom_opts: CustomOptions): boolean
         }
         log("auto match template: " + template_path);
         break;
+    case OptionDocTemplate.Auto_NO_RGB:
+        let tempdir_no_color = GetScriptFolder() + dirSeparator + "ps_script_res" + dirSeparator;
+        let tempname_no_color = app.locale.split("_")[0].toLocaleLowerCase() + "_no_color.psd"; // such as "zh_CN" -> zh.psd
+
+        let try_list_no_color: string[] = [
+            tempdir_no_color + tempname_no_color,
+            tempdir_no_color + "en_no_color.psd"
+        ];
+        for (let i = 0; i < try_list_no_color.length; i++) {
+            if (FileIsExists(try_list_no_color[i])) {
+                template_path = try_list_no_color[i];
+                break;
+            }
+        }
+        if (template_path === "") {
+            log_err("error: " + I18n.ERROR_PRESET_TEMPLATE_NOT_FOUND);
+            return false;
+        }
+        log("auto match template: " + template_path);
+        break
+
     case OptionDocTemplate.No:
     default:
         log("template not used");
