@@ -276,6 +276,28 @@ class LabelPlusInput extends GenericUI {
         xx = xOfs;
         yy += 25;
 
+        // overlay manual image source folder select
+        pnl.overlayManualSourceLabel = pnl.add('statictext', [xx, yy, xx + 80, yy + 20], I18n.LABEL_OVERLAY_MANUAL_SOURCE);
+        xx += 90;
+        pnl.overlayManualSourceTextBox = pnl.add('edittext', [xx, yy, xx + 205, yy + 20], '');
+        xx += 210;
+        pnl.overlayManualSourceBrowse = pnl.add('button', [xx, yy - 2, xx + 30, yy + 20], '...');
+        pnl.overlayManualSourceBrowse.onClick = () => {
+            try {
+                let def :string = (pnl.overlayManualSourceTextBox.text ?
+                    pnl.overlayManualSourceTextBox.text : 
+                    (pnl.sourceTextBox.text ? pnl.sourceTextBox.text : Folder.desktop));
+                let f = Stdlib.selectFolder(I18n.LABEL_OVERLAY_MANUAL_SOURCE, def);
+                if (f) {
+                    pnl.overlayManualSourceTextBox.text = f.fsName;
+                }
+            } catch (e) {
+                alert(Stdlib.exceptionMessage(e));
+            }
+        };
+        xx = xOfs;
+        yy += 25;
+
         // match image file by order
         pnl.matchImgByOrderCheckBox = pnl.add('checkbox', [xx, yy, xx + 190, yy + 20], I18n.CHECKBOX_MATCH_IMG_BY_ORDER);
         pnl.matchImgByOrderCheckBox.onClick = () => {
@@ -348,6 +370,12 @@ class LabelPlusInput extends GenericUI {
         // tip for multiple selection
         pnl.add('statictext', [xx, yy, xx + 330, yy + 44], I18n.LABEL_SELECT_TIP, { multiline: true });
 
+        // 初始化涂白文件夾路徑
+        let opts = this.opts;
+        if (opts.overlayManualSource !== undefined) {
+            pnl.overlayManualSourceTextBox.text = opts.overlayManualSource;
+        }
+
         let getOption = (opts: CustomOptions, toFile: boolean): CustomOptions | null => {
             if (!toFile) {
                 // image source folder
@@ -357,6 +385,18 @@ class LabelPlusInput extends GenericUI {
                     return null;
                 }
                 opts.source = f.fsName;
+
+                // overlay manual source folder (可選)
+                if (pnl.overlayManualSourceTextBox.text !== "") {
+                    let omf = new Folder(pnl.overlayManualSourceTextBox.text);
+                    if (!omf || !omf.exists) {
+                        alert(I18n.ERROR_NOT_FOUND_OVERLAY_MANUAL_SOURCE);
+                        return null;
+                    }
+                    opts.overlayManualSource = omf.fsName;
+                } else {
+                    opts.overlayManualSource = ""; // 空字符串表示不使用涂白文件夾
+                }
 
                 // images select
                 if (!pnl.chooseImageListBox.selection || pnl.chooseImageListBox.selection.length == 0) {

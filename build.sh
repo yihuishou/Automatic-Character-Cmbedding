@@ -4,7 +4,7 @@ cd "${0%%/*}"
 
 TSC=./node_modules/typescript/bin/tsc
 TSC_OUTPUT=build/app.js
-PS_JSX_OUTPUT=build/LabelPlus_Ps_Script.jsx
+PS_JSX_OUTPUT=build/LabelPlus_Ps_Script_ZS.jsx
 
 rm -rf ./build/*
 mkdir -p build/
